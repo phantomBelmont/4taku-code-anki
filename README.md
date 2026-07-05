@@ -1,1 +1,1 @@
-# 4taku-code-anki
+# 4taku-code-anki コード勉強中。初心者。Leo AIに教わったクイズアプリのコードに、自分で考えた設問と回答を追記。
