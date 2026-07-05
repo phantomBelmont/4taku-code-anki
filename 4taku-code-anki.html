@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌑 コードクイズ</title>
+  <style>
+    /* ====================
+       🌑 基本デザイン (ダークモード)
+       ==================== */
+    body {
+      background-color: #0f0f12; /* 深い黒 */
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      background: #1a1a20;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 200, 0.1); /* 緑のぼかし光 */
+      text-align: center;
+      position: relative;
+      border: 1px solid #333;
+    }
+
+    h1 {
+      color: #00ffc8; /* ネオングリーン */
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(0, 255, 200, 0.6);
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 5px rgba(0, 255, 200, 0.4); }
+      to { text-shadow: 0 0 20px rgba(0, 255, 200, 0.8), 0 0 10px #fff; }
+    }
+
+    /* ====================
+       📝 問題表示エリア
+       ==================== */
+    #quiz-screen {
+      display: block;
+    }
+
+    #progress-text {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    #question-box {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin: 20px 0;
+      line-height: 1.5;
+      color: #fff;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ====================
+       🔘 選択肢ボタン
+       ==================== */
+    #options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .option-btn {
+      background: #252530;
+      color: #fff;
+      border: 2px solid #333;
+      padding: 15px;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #303040;
+      border-color: #00ffc8;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 255, 200, 0.2);
+    }
+
+    .option-btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    /* 正解・不正解のスタイル */
+    .option-btn.correct {
+      background: #005f40 !important;
+      border-color: #00ffc8 !important;
+      color: #fff;
+      box-shadow: 0 0 15px #00ffc8;
+      animation: pulse 0.5s;
+    }
+
+    .option-btn.wrong {
+      background: #5f0000 !important;
+      border-color: #ff4444 !important;
+      color: #fff;
+      animation: shake 0.4s;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* ====================
+       💬 フィードバック・スコア
+       ==================== */
+    #feedback-box {
+      min-height: 60px;
+      font-size: 1rem;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid #00ffc8;
+      display: none; /* 最初は非表示 */
+      animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #next-btn {
+      background: #00ffc8;
+      color: #0f0f12;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(0, 255, 200, 0.4);
+      display: none;
+    }
+
+    #next-btn:hover {
+      background: #fff;
+      box-shadow: 0 0 25px rgba(0, 255, 200, 0.8);
+      transform: scale(1.05);
+    }
+
+    #score-box {
+      margin-top: 25px;
+      font-size: 1rem;
+      color: #888;
+    }
+
+    #score {
+      color: #00ffc8;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    /* ====================
+       🎉 終了画面
+       ==================== */
+    #finish-screen {
+      display: none;
+      animation: zoomIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #finish-screen h2 {
+      color: #00ffc8;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    #final-message {
+      color: #ccc;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* スマホ対応 */
+    @media (max-width: 480px) {
+      h1 { font-size: 1.8rem; }
+      #question-box { font-size: 1.2rem; }
+      .option-btn { font-size: 1rem; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- クイズ画面 -->
+    <div id="quiz-screen">
+      <h1>🌑 ネオン・クイズ</h1>
+      <p id="progress-text">残り問題: 0</p>
+      <div id="question-box">問題を読み込んでいます...</div>
+      
+      <div id="options-container">
+        <!-- ボタンがここに入ります -->
+      </div>
+      
+      <div id="feedback-box"></div>
+      
+      <button id="next-btn" onclick="nextQuestion()">次の問題へ ➡️</button>
+      
+      <div id="score-box">
+        現在の得点: <span id="score">0</span> / <span id="total-score"></span>
+      </div>
+    </div>
+
+    <!-- 終了画面 -->
+    <div id="finish-screen">
+      <h2>🎉 全問正解！おめでとう！</h2>
+      <p id="final-message"></p>
+      <button id="next-btn" onclick="location.reload()" style="display: inline-block;">🔄 もう一度挑戦</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 📦 問題データ (4択)
+    // ==========================================
+    const allQuestions = [
+      {
+        id: 1,
+        question: "<script>タグを含む文字列を、HTML内で使うには？",
+        options: ["バッククォートで囲む", "締めを<\\/script>と書く", "始めを<Vscript>と書く", "<script>タグをあきらめる"],
+        correct:1,
+        explanation: "バックスラッシュを「/script」の前にだけ付け足す！→ほかにもinnerHTMLで動的に生成する方法・codeタグなどで表示する方法などがある。"
+      },
+      {
+        id: 2,
+        question: "text-shadowで0 0 5px #fffはそれぞれ何を意味する？",
+        options: ["影の大きさ,影の角度,文字の大きさ,文字の色", "文字の色,文字の角度,文字の大きさ,fffというタグ", "X軸,縦Y軸,ぼかしの広さBlur,影の色", "特に意味はない"],
+        correct:2,
+        explanation: "文字を構成するそれぞれの点がいる場所(X軸Y軸とも0)から、5px分白い光を放つ。"
+      },
+      {
+        id: 3,
+        question: "",
+        options: ["", "", "", ""],
+        correct: 0,
+        explanation: ""
+      },
+      {
+        id: 4,
+        question: "text-shadowとdrop-shadowの違いは？",
+        options: ["", "", "", ""],
+        correct: 0,
+        explanation: ""
+      }
+    ];
+
+    // ==========================================
+    // ⚙️ 変数と初期化
+    // ==========================================
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let isAnswered = false;
+    let totalQuestions = allQuestions.length;
+
+    // 画面要素
+    const quizScreen = document.getElementById('quiz-screen');
+    const finishScreen = document.getElementById('finish-screen');
+    const questionBox = document.getElementById('question-box');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback-box');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreEl = document.getElementById('score');
+    const totalScoreEl = document.getElementById('total-score');
+    const progressText = document.getElementById('progress-text');
+    const finalMessage = document.getElementById('final-message');
+
+    // アプリ開始
+    init();
+
+    function init() {
+      currentQuestions = [...allQuestions];
+      shuffleArray(currentQuestions);
+      
+      currentIndex = 0;
+      score = 0;
+      quizScreen.style.display = 'block';
+      finishScreen.style.display = 'none';
+      totalScoreEl.textContent = totalQuestions;
+      
+      showQuestion();
+    }
+
+    // シャッフル
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function showQuestion() {
+      if (currentIndex >= currentQuestions.length) {
+        finishAll();
+        return;
+      }
+
+      const q = currentQuestions[currentIndex];
+      questionBox.textContent = q.question;
+      progressText.textContent = `残り問題: ${currentQuestions.length}`;
+      
+      optionsContainer.innerHTML = '';
+      feedbackBox.style.display = 'none';
+      feedbackBox.textContent = '';
+      nextBtn.style.display = 'none';
+      isAnswered = false;
+
+      const labels = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.textContent = `${labels[index]}. ${opt}`;
+        btn.className = 'option-btn';
+        btn.onclick = () => checkAnswer(index, btn, q);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex, btn, q) {
+      if (isAnswered) return;
+      isAnswered = true;
+
+      const isCorrect = selectedIndex === q.correct;
+      const buttons = optionsContainer.querySelectorAll('.option-btn');
+
+      feedbackBox.style.display = 'block';
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+        scoreEl.textContent = score;
+        feedbackBox.innerHTML = `<span style="color:#00ffc8">🎉 正解！</span><br><span style="font-size:0.9em; color:#ccc">${q.explanation}</span>`;
+        
+        // 正解ならリストから削除
+        currentQuestions.splice(currentIndex, 1);
+        currentIndex--; 
+        
+      } else {
+        btn.classList.add('wrong');
+        buttons[q.correct].classList.add('correct'); // 正解も表示
+        feedbackBox.innerHTML = `<span style="color:#ff4444">😅 不正解...</span><br>正解は <span style="color:#00ffc8">[${['A','B','C','D'] [q.correct]}]</span><br><span style="font-size:0.9em; color:#ccc">${q.explanation}</span>`;
+        
+        // 不正解ならリストの最後尾に追加（再出題）
+        const wrongCopy = {...q};
+        currentQuestions.push(wrongCopy);
+      }
+
+      buttons.forEach(b => b.disabled = true);
+      nextBtn.style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      showQuestion();
+    }
+
+    function finishAll() {
+      quizScreen.style.display = 'none';
+      finishScreen.style.display = 'block';
+      finalMessage.innerHTML = `👏😆すべての問題をマスターしました！<br><span style="font-size:0.9em; color:#888">あなたはコードの達人です！✨</span>`;
+    }
+  </script>
+</body>
+</html>
